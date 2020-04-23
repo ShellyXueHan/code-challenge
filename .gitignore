@@ -1,0 +1,6 @@
+# outputs:
+*output*
+
+# local env file:
+*.env
+vars.yml

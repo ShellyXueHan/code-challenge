@@ -1,0 +1,6 @@
+---
+# Create Objects:
+- name: Create objects from deployment template
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'templates/rocketchat-manifest.yml') }}"

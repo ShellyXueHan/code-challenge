@@ -5,13 +5,13 @@
   vars_files: 
    - vars.yml
   vars:
-    LABEL: "app={{ APPLICATION_NAME }}"
+    APP_LABEL: "app={{ APPLICATION_NAME }}"
+    DB_ONLY_LABEL: "name={{ MONGODB_SERVICE_NAME }}"
   tasks:
-    - name: Object queries
-      include_tasks: tasks/get_object.yml
-
     - name: Clear start before deployment
       include_tasks: tasks/clear_object.yml
+      vars:
+        LABEL: "{{ APP_LABEL }}"
 
-    - name: Deploy RC app
+    - name: Deploy RC app and MongoDB
       include_tasks: tasks/create_object.yml

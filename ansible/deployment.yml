@@ -1,0 +1,14 @@
+---
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  vars_files: 
+   - vars.yml
+  vars:
+    LABEL: "app={{ APPLICATION_NAME }}"
+  tasks:
+    - name: sample get objects
+      include_tasks: tasks/get_object.yml
+
+    - name: sample create objects
+      include_tasks: tasks/create_object.yml

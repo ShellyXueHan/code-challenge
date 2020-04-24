@@ -1,20 +1,34 @@
-#----- RocketChat Settings -----
-NAMESPACE: 
+#----- General Settings -----
+NAMESPACE: xx
 APPLICATION_NAME: rocketchat-maintenance
-HOSTNAME_HTTPS: rocketchat-maintenance.pathfinder.gov.bc.ca 
+
+#----- RocketChat Settings -----
+HOSTNAME_HTTPS: xx
+
+# RC image:
 ROCKETCHAT_IMAGE_TAG: 3.0
+ROCKETCHAT_IMAGE: registry.hub.docker.com/library/rocket.chat
+
+# storage to allocate for file uploads to RocketChat
 FILE_UPLOAD_STORAGE_SIZE: 5Gi
-ROCKETCHAT_REPLICAS: 3
-ROCKETCHAT_MIN_HPA: 1
-ROCKETCHAT_MAX_HPA: 3
-MEMORY_REQUEST: 1Gi
-MEMORY_LIMIT: 2Gi
-CPU_REQUEST: 250m
-CPU_LIMIT: 500m
-VOLUME_CAPACITY: 1Gi
-SC_MONGO: netapp-block-standard
 SC_FILE_UPLOAD: netapp-file-standard
 
-#----- mongodb settings -----
+# Admin access to app
+ROCKETCHAT_ADMIN_USER: admin
+ROCKETCHAT_ADMIN_PASSWORD: "{{ lookup('password', '/tmp/rc-password length=16 chars=ascii_letters,digits') }}"
+
+# HA HorizontalPodAutoscaler
+ROCKETCHAT_REPLICAS: 2
+ROCKETCHAT_MIN_HPA: 1
+ROCKETCHAT_MAX_HPA: 3
+
+# DevOps resources
+MEMORY_REQUEST: 2Gi
+MEMORY_LIMIT: 5Gi
+CPU_REQUEST: 500m
+CPU_LIMIT: 2
+
+
+#----- MongoDB settings -----
 MONGODB_SERVICE_NAME: mongodb-maintenance
 MONGODB_SECRET_NAME: mongodb-maintenance

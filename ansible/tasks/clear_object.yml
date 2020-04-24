@@ -1,0 +1,18 @@
+---
+# Clean up objects by label:
+- name: List on objects by label
+  command: >
+    oc get all,configmap,secret,pvc -l "{{ LABEL }}"
+  register: all_objects
+
+- pause:  
+    prompt: "Do you want to clean the following objects? (y/n) \n {{ all_objects.stdout }}"
+    echo: yes
+  register: is_clean
+
+# TODO: option to keep PVC
+
+- name: Clear objects by label
+  command: >
+    oc delete all,configmap,secret,pvc -l "{{ LABEL }}"
+  when: is_clean.user_input == "y"

@@ -1,8 +1,11 @@
 ---
 # Get list of Objects in a namespace:
-- name: Get object by type
+- name: Get objects by label
   set_fact:
     deployments: "{{ lookup('k8s', kind='dc', namespace=NAMESPACE, label_selector=LABEL) }}"
     statefulsets: "{{ lookup('k8s', kind='StatefulSet', namespace=NAMESPACE, label_selector=LABEL) }}"
+    images: "{{ lookup('k8s', kind='ImageStream', namespace=NAMESPACE, label_selector=LABEL) }}"
 
-- debug: msg="{{ deployments }}"
+- debug: msg="deployments - {{ deployments }}"
+- debug: msg="statefulsets - {{ statefulsets }}"
+- debug: msg="images - {{ images }}"

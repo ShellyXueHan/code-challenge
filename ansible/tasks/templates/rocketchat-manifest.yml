@@ -1,13 +1,48 @@
 apiVersion: v1
 kind: List
 items:
+# Create a local istag for RC from docker
+- apiVersion: image.openshift.io/v1
+  kind: ImageStream
+  metadata:
+    namespace: "{{ NAMESPACE }}"
+    name: "{{ APPLICATION_NAME }}"
+    labels:
+      app: "{{ APPLICATION_NAME }}"
+  spec:
+    lookupPolicy:
+      local: false
+    tags:
+    - annotations: null
+      from:
+        kind: DockerImage
+        name: "{{ ROCKETCHAT_IMAGE }}:{{ ROCKETCHAT_IMAGE_TAG }}"
+      name: "{{ ROCKETCHAT_IMAGE_TAG }}"
+      referencePolicy:
+        type: Source
+
+# Secret for admin user credential
+- apiVersion: v1
+  kind: Secret
+  metadata:
+    namespace: "{{ NAMESPACE }}"
+    name: "{{ APPLICATION_NAME }}-admin-secret"
+    labels:
+      app: "{{ APPLICATION_NAME }}"
+  stringData:
+    ADMIN_USERNAME: "{{ ROCKETCHAT_ADMIN_USER }}"
+    ADMIN_PASS: "{{ ROCKETCHAT_ADMIN_PASSWORD }}"
+
+# TODO: add a configmap for initial setup
+
+# Service for the Rocketchat NodeJS service
 - apiVersion: v1
   kind: Service
   metadata:
+    namespace: "{{ NAMESPACE }}"
+    name: "{{ APPLICATION_NAME }}"
     labels:
       app: "{{ APPLICATION_NAME }}"
-    name: "{{ APPLICATION_NAME }}"
-    namespace: "{{ NAMESPACE }}"
   spec:
     ports:
     - name: 3000-tcp
@@ -19,11 +54,13 @@ items:
       deploymentConfig: "{{ APPLICATION_NAME }}"
     type: ClusterIP
     SessionAffinity: None
+
+# Route to expose service
 - apiVersion: v1
   kind: Route
   metadata:
-    name: "{{ APPLICATION_NAME }}"
     namespace: "{{ NAMESPACE }}"
+    name: "{{ APPLICATION_NAME }}"
     annotations:
       description: Route for application's http service.
     labels:
@@ -38,3 +75,141 @@ items:
     tls:
       termination: edge
       insecureEdgeTerminationPolicy: Redirect
+
+# PVC for app assets upload
+- kind: PersistentVolumeClaim
+  apiVersion: v1
+  metadata:
+    namespace: "{{ NAMESPACE }}"
+    name: "{{ APPLICATION_NAME }}-uploads"
+    annotations:
+      description: PVC for application assets upload.
+    labels:
+      app: "{{ APPLICATION_NAME }}"
+  spec:
+    storageClassName: "{{ SC_FILE_UPLOAD }}"
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests:
+        storage: "{{ FILE_UPLOAD_STORAGE_SIZE }}"
+    volumename: "{{ APPLICATION_NAME }}-uploads"
+
+# App
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    namespace: "{{ NAMESPACE }}"
+    name: "{{ APPLICATION_NAME }}"
+    labels:
+      app: "{{ APPLICATION_NAME }}"
+  spec:
+    strategy:
+      type: Recreate
+    triggers:
+    - type: ConfigChange
+    replicas: "{{ ROCKETCHAT_REPLICAS }}"
+    selector:
+      app: "{{ APPLICATION_NAME }}"
+      deploymentConfig: "{{ APPLICATION_NAME }}"
+    template:
+      metadata:
+        labels:
+          app: "{{ APPLICATION_NAME }}"
+          deploymentConfig: "{{ APPLICATION_NAME }}"
+      spec:
+        affinity:
+          podAntiAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values: 
+                  - "{{ APPLICATION_NAME }}"
+              topologyKey: "kubernetes.io/hostname"
+        volumes:
+          - name: "{{ APPLICATION_NAME }}-uploads"
+            persistentVolumeClaim:
+              claimName: "{{ APPLICATION_NAME }}-uploads"
+        containers:
+        - image: "{{ APPLICATION_NAME }}:{{ ROCKETCHAT_IMAGE_TAG }}"
+          name: "{{ APPLICATION_NAME }}"
+          env:
+          - name: MONGO_URL
+            valueFrom:
+              secretKeyRef:
+                key: mongo-url
+                name: "{{ MONGODB_SECRET_NAME }}"
+          - name: MONGO_OPLOG_URL
+            valueFrom:
+              secretKeyRef:
+                key: mongo-oplog-url
+                name: "{{ MONGODB_SECRET_NAME }}"
+          envFrom: 
+            - secretRef:
+                name: "{{ APPLICATION_NAME }}-admin-secret"
+          volumeMounts:
+            - name: "{{ APPLICATION_NAME }}-uploads"
+              mountPath: /app/uploads
+          ports:
+          - containerPort: 3000
+            protocol: TCP
+          terminationMessagePath: /dev/termination-log
+          livenessProbe:
+            httpGet:
+              path: /api/info
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/info
+              port: 3000
+              scheme: HTTP
+            initialDelaySeconds: 60
+            timeoutSeconds: 5
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            limits:
+              cpu: "{{ CPU_LIMIT }}"
+              memory: "{{ MEMORY_LIMIT }}"
+            requests:
+              memory: "{{ MEMORY_REQUEST }}"
+              cpu: "{{ CPU_REQUEST }}"
+        restartPolicy: Always
+    triggers:
+    - type: ConfigChange
+    - imageChangeParams:
+        automatic: true
+        from:
+          kind: ImageStreamTag
+          name: "{{ APPLICATION_NAME }}:{{ ROCKETCHAT_IMAGE_TAG }}"
+        containerNames:
+        - "{{ APPLICATION_NAME }}"
+      type: ImageChange
+
+# Application HA
+- apiVersion: autoscaling/v1
+  kind: HorizontalPodAutoscaler
+  metadata:
+    namespace: "{{ NAMESPACE }}"
+    name: "{{ APPLICATION_NAME }}-hpa"
+    labels:
+      app: "{{ APPLICATION_NAME }}"
+  spec:
+    scaleTargetRef:
+      kind: DeploymentConfig 
+      name: "{{ APPLICATION_NAME }}"
+      apiVersion: apps.openshift.io/v1
+      subresource: scale
+    minReplicas: "{{ ROCKETCHAT_MIN_HPA }}"
+    maxReplicas: "{{ ROCKETCHAT_MAX_HPA }}"
+    cpuUtilization:
+      targetCPUUtilizationPercentage: 80

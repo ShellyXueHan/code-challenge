@@ -1,11 +1,18 @@
 ---
 # Create Objects:
 
-# # --- MongoDB Statefulset: ---
-# - name: Create objects from template
-#   k8s:
-#     state: present
-#     definition: "{{ lookup('template', 'templates/mongodb-manifest.yml') }}"
+# --- MongoDB Statefulset: ---
+- name: Create objects from template
+  k8s:
+    state: present
+    definition: "{{ lookup('template', 'templates/mongodb-manifest.yml') }}"
+
+- name: wait for StatefulSet pods to get into ready state
+  set_fact:
+    ss_dc: "{{ lookup('k8s', kind='StatefulSet', namespace=NAMESPACE, label_selector=LABEL) }}"
+  until: ss_dc.status.readyReplicas == {{ MONGODB_REPLICAS }}
+  retries: 6
+  delay: 15
 
 # --- RC APP: ---
 - name: Create objects from deployment template

@@ -7,8 +7,8 @@
   vars:
     LABEL: "app={{ APPLICATION_NAME }}"
   tasks:
-    - name: sample get objects
+    - name: Object queries
       include_tasks: tasks/get_object.yml
 
-    - name: sample create objects
+    - name: Deploy RC app
       include_tasks: tasks/create_object.yml

@@ -31,4 +31,25 @@ CPU_LIMIT: 2
 
 #----- MongoDB settings -----
 MONGODB_SERVICE_NAME: mongodb-maintenance
+# Replica set
+MONGODB_REPLICAS: 3
+
+# MongoDB Secret
 MONGODB_SECRET_NAME: mongodb-maintenance
+MONGODB_REPLICA_NAME: rs0
+MONGODB_DATABASE: rocketdb
+MONGODB_USER: "{{ lookup('password', '/tmp/mongo-password-0 length=5 chars=ascii_letters,digits') }}"
+MONGODB_PASSWORD: "{{ lookup('password', '/tmp/mongo-passwor-1 length=8 chars=ascii_letters,digits') }}"
+MONGODB_ADMIN_PASSWORD: "{{ lookup('password', '/tmp/mongo-password-2 length=8 chars=ascii_letters,digits') }}"
+
+# The value of the MongoDB keyfile
+# (https://docs.mongodb.com/manual/core/security-internal-authentication/#internal-auth-keyfile)
+MONGODB_KEYFILE_VALUE: "{{ lookup('password', '/tmp/mongo-password-3 length=255 chars=ascii_letters,digits') }}"
+
+# MongoDB Image, supported from openshift namespace
+MONGODB_IMAGE: docker-registry.default.svc:5000/openshift/mongodb
+MONGODB_IMAGE_TAG: 3.6
+
+# DB storage
+VOLUME_CAPACITY: 10Gi
+SC_MONGO: netapp-block-standard

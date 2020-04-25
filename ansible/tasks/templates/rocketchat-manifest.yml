@@ -161,7 +161,7 @@ items:
               path: /api/info
               port: 3000
               scheme: HTTP
-            initialDelaySeconds: 60
+            initialDelaySeconds: 20
             timeoutSeconds: 5
             periodSeconds: 20
             successThreshold: 1
@@ -171,7 +171,7 @@ items:
               path: /api/info
               port: 3000
               scheme: HTTP
-            initialDelaySeconds: 60
+            initialDelaySeconds: 40
             timeoutSeconds: 5
             periodSeconds: 20
             successThreshold: 1

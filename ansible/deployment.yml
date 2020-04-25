@@ -2,11 +2,13 @@
 - hosts: localhost
   gather_facts: no
   connection: local
-  vars_files: 
+  vars_files:
    - vars.yml
   vars:
     APP_LABEL: "app={{ APPLICATION_NAME }}"
     DB_ONLY_LABEL: "name={{ MONGODB_SERVICE_NAME }}"
+    # mongo operation settings
+    ORIGINAL_SS_POD: "{{ MONGODB_SERVICE_NAME }}-0"
   tasks:
     - name: Clear start before deployment
       include_tasks: tasks/clear_object.yml
@@ -22,13 +24,33 @@
         namespace: "{{ NAMESPACE }}"
         ready_status: "{{ MONGODB_REPLICAS }}"
 
-# TODO: rsh into statefulset pod to check RS status
+    # Check for MongoDB syncing status
+    - name: Add hosts for MongoDB pods
+      add_host:
+        name: "ORIGINAL_SS_POD"
+        groups:
+        - mongo_pod
 
-    - pause:
-        prompt: "check on StatefulSet ready"
-        echo: yes
-      register: objects_delete
+# TODO: use inventory instead
+# Switch to mongo_pod host for pod interaction
+- hosts: mongo_pod
+  gather_facts: yes
+  connection: kubectl
+  vars:
+    DB_SCRIPT: kk
+  tasks:
+    - name: Clear start before deployment
+      include_tasks: tasks/replica_set_operation.yml
 
+    - debug: msg="------- MongoDB ready, continue with App deployment -------"
+
+# Switch back to localhost
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  vars_files:
+   - vars.yml
+  tasks:
     - name: Deploy RC app
       include_tasks: tasks/create_object.yml
       vars:
@@ -38,6 +60,19 @@
         namespace: "{{ NAMESPACE }}"
         ready_status: "{{ ROCKETCHAT_REPLICAS }}"
 
-# TODO: check APP's api/info
-# - check app status: curl -i https://rocketchat-maintenance.pathfinder.gov.bc.ca/api/info
-# - create channel
+    - name: Check application reachable from outside cluster
+      uri:
+        url: "https://{{ HOSTNAME_HTTPS }}/api/info"
+      register: output
+      until: output.status == 200
+      delay: 15
+      retries: 5
+    
+    - debug: msg="------- RocketChat App ready, continue with channel Creation -------"
+
+    - name: RC settings via API
+      include_tasks: tasks/rc_setup.yml
+
+    - debug: msg="------- Completed. Available at https://{{ HOSTNAME_HTTPS }} -------"
+
+# TODO: add route switch from prod instance

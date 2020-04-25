@@ -9,3 +9,6 @@ metadata:
   namespace: "{{ NAMESPACE }}"
   labels:
       name: "{{ MONGODB_SERVICE_NAME }}"
+  annotations:
+    description: 'This shell script enables RHSCL source when start up pod which allow remote pod exec on specified scl.'
+    tags: 'explore'

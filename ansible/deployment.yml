@@ -13,5 +13,31 @@
       vars:
         LABEL: "{{ APP_LABEL }}"
 
-    - name: Deploy RC app and MongoDB
+    - name: Deploy MongoDB statefulset
       include_tasks: tasks/create_object.yml
+      vars:
+        name: "{{ MONGODB_SERVICE_NAME }}"
+        kind: StatefulSet
+        template: templates/mongodb-manifest.yml
+        namespace: "{{ NAMESPACE }}"
+        ready_status: "{{ MONGODB_REPLICAS }}"
+
+# TODO: rsh into statefulset pod to check RS status
+
+    - pause:
+        prompt: "check on StatefulSet ready"
+        echo: yes
+      register: objects_delete
+
+    - name: Deploy RC app
+      include_tasks: tasks/create_object.yml
+      vars:
+        name: "{{ APPLICATION_NAME }}"
+        kind: dc
+        template: templates/rocketchat-manifest.yml
+        namespace: "{{ NAMESPACE }}"
+        ready_status: "{{ ROCKETCHAT_REPLICAS }}"
+
+# TODO: check APP's api/info
+# - check app status: curl -i https://rocketchat-maintenance.pathfinder.gov.bc.ca/api/info
+# - create channel

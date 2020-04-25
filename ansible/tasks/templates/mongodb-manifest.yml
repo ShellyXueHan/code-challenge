@@ -80,6 +80,10 @@ items:
                   values: 
                   - "{{ MONGODB_SERVICE_NAME }}"
               topologyKey: "kubernetes.io/hostname"
+        volumes:
+        - name: "scl-enable"
+          configMap:
+            name: "scl-enable"
         containers:
           - name: mongo-container
             image: "{{ MONGODB_IMAGE }}:{{ MONGODB_IMAGE_TAG }}"
@@ -90,6 +94,9 @@ items:
             volumeMounts:
               - name: mongo-data
                 mountPath: "/var/lib/mongodb/data"
+              - name: scl-enable
+                mountPath: "/etc/profile.d/scl_enable.sh"
+                subPath: "scl_enable.sh"
             env:
               - name: MONGODB_USER
                 valueFrom:

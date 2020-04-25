@@ -16,12 +16,12 @@
   register: all_pvcs
 
 - pause:
-    prompt: "Do you want to clear the following objects? \n\n{{ all_objects.stdout }} \n-------------\n(y/n)"
+    prompt: "------------- Do you want to clear the following objects? \n\n{{ all_objects.stdout }} \n-------------\n(y/n)"
     echo: yes
   register: objects_delete
 
 - pause:
-    prompt: "Do you want to delete PVC? \n\n{{ all_pvcs.stdout }} \n-------------\n(y/n)"
+    prompt: "------------- Do you want to delete PVC? \n\n{{ all_pvcs.stdout }} \n-------------\n(y/n)"
     echo: yes
   register: pvc_delete
 

@@ -1,28 +1,18 @@
 ---
-# Create Objects:
-
-# --- MongoDB Statefulset: ---
-- name: Create objects from template
+# Create objects based on input:
+- name: Create objects from template - "{{ template }}"
   k8s:
     state: present
-    definition: "{{ lookup('template', 'templates/mongodb-manifest.yml') }}"
+    definition: "{{ lookup('template', template) }}"
 
-- name: wait for StatefulSet pods to get into ready state
-  set_fact:
-    ss_dc: "{{ lookup('k8s', kind='StatefulSet', namespace=NAMESPACE, label_selector=LABEL) }}"
-  until: ss_dc.status.readyReplicas == {{ MONGODB_REPLICAS }}
-  retries: 6
+- name: Wait for "{{ kind }}" object pods to get into ready state
+  k8s_info:
+    api_version: v1
+    kind: "{{ kind }}"
+    name: "{{ name }}"
+    namespace: "{{ namespace }}"
+  register: result
+  until: (result.resources[0].status.readyReplicas is defined) and (result.resources[0].status.readyReplicas == ready_status)
   delay: 15
-
-# --- RC APP: ---
-- name: Create objects from deployment template
-  k8s:
-    state: present
-    definition: "{{ lookup('template', 'templates/rocketchat-manifest.yml') }}"
-
-- name: wait for object to get into ready state
-  set_fact:
-    rc_dc: "{{ lookup('k8s', kind='dc', namespace=NAMESPACE, label_selector=LABEL) }}"
-  until: rc_dc.status.readyReplicas == {{ ROCKETCHAT_REPLICAS }}
-  retries: 6
-  delay: 10
+  retries: 20
+  

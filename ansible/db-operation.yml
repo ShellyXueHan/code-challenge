@@ -6,17 +6,18 @@
    - vars.yml
   vars:
     BACKUP_LABEL: "name={{ BACKUP_MONGODB_NAME }}"
+    BACKUP_POD: "{{ BACKUP_MONGODB_NAME }}-0"
   tasks:
     - name: Clear start before deployment
       include_tasks: tasks/clear_object.yml
       vars:
         LABEL: "{{ BACKUP_LABEL }}"
 
-    - name: Deploy MongoDB backup instance
+    - name: Deploy MongoDB backup instance as Statefulset
       include_tasks: tasks/create_object.yml
       vars:
         name: "{{ BACKUP_MONGODB_NAME }}"
-        kind: dc
+        kind: StatefulSet
         template: templates/mongo-backup-manifest.yml
         namespace: "{{ NAMESPACE }}"
         ready_status: "{{ BACKUP_MONGODB_REPLICAS }}"

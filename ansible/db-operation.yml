@@ -46,3 +46,13 @@
       debug: msg="{{ result.stdout_lines }}"
 
     - debug: msg="------- Backup Verified -------"
+
+# Switch back to localhost
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  vars_files:
+   - vars.yml
+  tasks:
+    - name: Idle service now
+      command: oc -n "{{ NAMESPACE }}" idle "{{ BACKUP_MONGODB_NAME }}-internal"

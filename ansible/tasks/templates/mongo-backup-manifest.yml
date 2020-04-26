@@ -48,36 +48,46 @@ items:
       description: 'This shell script runs MongoDB dump, restore and verification steps'
       tags: 'mongo,backup,restore,verify'
 
-# Use a deployment to conduct the backup-restore activity
-- apiVersion: v1
-  kind: DeploymentConfig
+# A headless service to create DNS records
+- kind: Service
+  apiVersion: v1
   metadata:
-    name: "{{ BACKUP_MONGODB_NAME }}"
+    namespace: "{{ NAMESPACE }}"
+    name: "{{ BACKUP_MONGODB_NAME }}-internal"
     labels:
       name: "{{ BACKUP_MONGODB_NAME }}"
-    namespace: "{{ NAMESPACE }}"
-  spec:
-    strategy:
-      type: Recreate
-    triggers:
-    - type: ConfigChange
-    replicas: "{{ BACKUP_MONGODB_REPLICAS }}"
+    annotations:
+      service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  spec:    
+    clusterIP: None
+    ports:
+      - name: mongodb
+        port: 27017
     selector:
       name: "{{ BACKUP_MONGODB_NAME }}"
-      deploymentConfig: "{{ BACKUP_MONGODB_NAME }}"
+
+# Use a Statefulset to conduct the backup-restore activity
+# (make use for predictable pod name)
+- apiVersion: apps/v1beta1
+  kind: StatefulSet
+  metadata:
+    name: "{{ BACKUP_MONGODB_NAME }}"
+    namespace: "{{ NAMESPACE }}"
+  spec:
+    serviceName: "{{ BACKUP_MONGODB_NAME }}-internal"
+    replicas: "{{ BACKUP_MONGODB_REPLICAS }}"
     template:
       metadata:
         labels:
           name: "{{ BACKUP_MONGODB_NAME }}"
-          deploymentConfig: "{{ BACKUP_MONGODB_NAME }}"
       spec:
         volumes:
-          - name: mongodb-backup
-            persistentVolumeClaim:
-              claimName: "{{ BACKUP_MONGODB_NAME }}"
-          - name: backup-restore-verify
-            configMap:
-              name: "{{ BACKUP_MONGODB_SCRIPT }}"
+        - name: mongodb-backup
+          persistentVolumeClaim:
+            claimName: "{{ BACKUP_MONGODB_NAME }}"
+        - name: backup-restore-verify
+          configMap:
+            name: "{{ BACKUP_MONGODB_SCRIPT }}"
         containers:
           - name: "{{ BACKUP_MONGODB_NAME }}"
             image: "{{ MONGODB_IMAGE }}:{{ MONGODB_IMAGE_TAG }}"
@@ -86,12 +96,12 @@ items:
               - '-c'
               - 'run-mongod'
             resources:
-            limits:
-              cpu: 250m
-              memory: 1Gi
-            requests:
-              cpu: 100m
-              memory: 512Mi
+              limits:
+                cpu: 250m
+                memory: 1Gi
+              requests:
+                cpu: 100m
+                memory: 512Mi
             env:
               - name: MONGODB_BACKUP_KEEP
                 value: "{{ MONGODB_BACKUP_KEEP }}"

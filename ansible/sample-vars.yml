@@ -19,7 +19,7 @@ ROCKETCHAT_ADMIN_PASSWORD: "{{ lookup('password', '/tmp/rc-password length=16 ch
 
 # HA HorizontalPodAutoscaler
 ROCKETCHAT_REPLICAS: 2
-ROCKETCHAT_MIN_HPA: 1
+ROCKETCHAT_MIN_HPA: 2
 ROCKETCHAT_MAX_HPA: 3
 
 # DevOps resources
@@ -53,3 +53,19 @@ MONGODB_IMAGE_TAG: 3.6
 # DB storage
 VOLUME_CAPACITY: 10Gi
 SC_MONGO: netapp-block-standard
+
+#----- RC notification settings -----
+CHANNLE_NAME: General
+MESSAGE: We are currently upgrading production RocketChat instance, this is the temporary chat room for us to communicate with you on the progress.
+
+
+#----- Database Backup-Restore-Verify settings -----
+BACKUP_MONGODB_NAME: mongodb-backup
+BACKUP_MONGODB_SCRIPT: backup-restore-verify
+MONGODB_SERVICE_PORT: '27017'
+# Number of backups to keep
+MONGODB_BACKUP_KEEP: 3
+BACKUP_MONGODB_REPLICAS: 1
+
+# explain: PVC is a normal PVC as this data does not need to be preserved
+# using a dc as this does not need to be run regularly

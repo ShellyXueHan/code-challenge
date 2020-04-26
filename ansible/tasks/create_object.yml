@@ -5,6 +5,7 @@
     state: present
     definition: "{{ lookup('template', template) }}"
 
+# TODO: update variable names
 - name: Wait for "{{ kind }}" object pods to get into ready state
   k8s_info:
     api_version: v1

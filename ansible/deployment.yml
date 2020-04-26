@@ -27,17 +27,17 @@
     # Check for MongoDB syncing status
     - name: Add hosts for MongoDB pods
       add_host:
-        name: "ORIGINAL_SS_POD"
+        name: "{{ ORIGINAL_SS_POD }}"
         groups:
         - mongo_pod
+    
+    - debug: msg="------------- Switching to kubectl for pod interaction -------------"
 
 # TODO: use inventory instead
 # Switch to mongo_pod host for pod interaction
 - hosts: mongo_pod
   gather_facts: yes
   connection: kubectl
-  vars:
-    DB_SCRIPT: kk
   tasks:
     - name: Clear start before deployment
       include_tasks: tasks/replica_set_operation.yml

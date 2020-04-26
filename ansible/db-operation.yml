@@ -38,7 +38,7 @@
   tasks:
     - debug: msg="------- Connection setup, start to run script -------"
 
-    - name: Verify mongo dump and restore has been successful
+    - name: Start mongo dump and restore, and verify for result
       raw: scl enable rh-mongodb36 '/var/lib/mongodb/backup-restore-verify.sh'
       register: result
 
@@ -54,5 +54,5 @@
   vars_files:
    - vars.yml
   tasks:
-    - name: Idle service now
-      command: oc -n "{{ NAMESPACE }}" idle "{{ BACKUP_MONGODB_NAME }}-internal"
+    - name: Scale down the backup instance
+      command: oc -n "{{ NAMESPACE }}" scale StatefulSet/"{{ BACKUP_MONGODB_NAME }}" --replicas=0

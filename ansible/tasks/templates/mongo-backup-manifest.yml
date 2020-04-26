@@ -34,7 +34,6 @@ items:
       DIR=/var/lib/mongodb-backup/dump-`date +%F-%T` &&
       echo "----- Start mongodump at $DIR -----" &&
       mongodump -j 1 -u admin -p $MONGODB_ADMIN_PASSWORD --host $MONGODB_SERVICE_NAME --port $MONGODB_SERVICE_PORT --authenticationDatabase=admin --gzip --out=$DIR &&
-      echo &&
       echo "----- Start mongorestore for db: $MONGODB_DATABASE -----" &&
       mongorestore -u admin -p $MONGODB_ADMIN_PASSWORD --authenticationDatabase admin --gzip $DIR/$MONGODB_DATABASE -d $MONGODB_DATABASE &&
       echo "----- Verify $MONGODB_DATABASE exists -----" &&
@@ -88,6 +87,7 @@ items:
         - name: backup-restore-verify
           configMap:
             name: "{{ BACKUP_MONGODB_SCRIPT }}"
+            defaultMode: 0777
         containers:
           - name: "{{ BACKUP_MONGODB_NAME }}"
             image: "{{ MONGODB_IMAGE }}:{{ MONGODB_IMAGE_TAG }}"
@@ -134,7 +134,7 @@ items:
               - name: mongodb-backup
                 mountPath: /var/lib/mongodb-backup
               - name: backup-restore-verify
-                mountPath: "/tmp/backup-restore-verify.sh"
+                mountPath: "/var/lib/mongodb/backup-restore-verify.sh"
                 subPath: "backup-restore-verify.sh"
             readinessProbe:
               tcpSocket:

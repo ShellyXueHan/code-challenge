@@ -21,3 +21,28 @@
         template: templates/mongo-backup-manifest.yml
         namespace: "{{ NAMESPACE }}"
         ready_status: "{{ BACKUP_MONGODB_REPLICAS }}"
+    
+    # Verify MongoDB restore status
+    - name: Add hosts for MongoDB pods
+      add_host:
+        name: "{{ BACKUP_POD }}"
+        groups:
+        - mongo_backup_pod
+
+    - debug: msg="------------- Switching to kubectl for pod interaction -------------"
+
+# Switch to mongo_backup_pod host for pod interaction
+- hosts: mongo_backup_pod
+  gather_facts: yes
+  connection: kubectl
+  tasks:
+    - debug: msg="------- Connection setup, start to run script -------"
+
+    - name: Verify mongo dump and restore has been successful
+      raw: scl enable rh-mongodb36 '/var/lib/mongodb/backup-restore-verify.sh'
+      register: result
+
+    - name: Verify result
+      debug: msg="{{ result.stdout_lines }}"
+
+    - debug: msg="------- Backup Verified -------"

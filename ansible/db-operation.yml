@@ -1,0 +1,22 @@
+---
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  vars_files:
+   - vars.yml
+  vars:
+    BACKUP_LABEL: "name={{ BACKUP_MONGODB_NAME }}"
+  tasks:
+    - name: Clear start before deployment
+      include_tasks: tasks/clear_object.yml
+      vars:
+        LABEL: "{{ BACKUP_LABEL }}"
+
+    - name: Deploy MongoDB backup instance
+      include_tasks: tasks/create_object.yml
+      vars:
+        name: "{{ BACKUP_MONGODB_NAME }}"
+        kind: dc
+        template: templates/mongo-backup-manifest.yml
+        namespace: "{{ NAMESPACE }}"
+        ready_status: "{{ BACKUP_MONGODB_REPLICAS }}"

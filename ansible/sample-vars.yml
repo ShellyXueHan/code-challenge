@@ -67,5 +67,7 @@ MONGODB_SERVICE_PORT: '27017'
 MONGODB_BACKUP_KEEP: 3
 BACKUP_MONGODB_REPLICAS: 1
 
-# explain: PVC is a normal PVC as this data does not need to be preserved
-# using a dc as this does not need to be run regularly
+#----- Production RocketChat routes -----
+PROD_NAMESPACE: xx
+PROD_ROUTE_NAME: xx
+PROD_HOSTNAME_HTTPS: xx

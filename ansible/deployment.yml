@@ -73,6 +73,9 @@
     - name: RC settings via API
       include_tasks: tasks/rc_setup.yml
 
-    - debug: msg="------- Completed. Available at https://{{ HOSTNAME_HTTPS }} -------"
+    - name: Switch production app route
+      include_tasks: tasks/switch_route.yml
+      vars:
+        template: templates/rocketchat-route-manifest.yml
 
-# TODO: add route switch from prod instance
+    - debug: msg="------- Completed. Available at https://{{ PROD_HOSTNAME_HTTPS }} -------"

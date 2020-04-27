@@ -1,0 +1,33 @@
+---
+# Create new route
+- name: Create objects from template - "{{ template }}"
+  k8s:
+    state: present
+    definition: "{{ lookup('template', template) }}"
+
+# Test for setup
+- name: Check application reachable from outside cluster
+  uri:
+    url: "https://{{ PROD_HOSTNAME_HTTPS }}/api/info"
+  register: output
+  until: output.status == 200
+  delay: 15
+  retries: 5
+
+# Remove the original route
+- name: Remove the maintenance route
+  k8s:
+    state: absent
+    api_version: v1
+    kind: Route
+    namespace: "{{ NAMESPACE }}"
+    name: "{{ APPLICATION_NAME }}"
+
+# Remove the old route now
+- name: Remove the existing Production route
+  k8s:
+    state: absent
+    api_version: v1
+    kind: Route
+    namespace: "{{ PROD_NAMESPACE }}"
+    name: "{{ PROD_ROUTE_NAME }}"

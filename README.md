@@ -42,8 +42,6 @@ Anisble Playbook to automate the MongoDB backup-restore tasks, and verify if the
 
 ***STRUCTURE:***
 
-(Image from https://github.com/BCDevOps/platform-services/blob/master/apps/rocketchat/RocketChat-MongoDB-HA-Design.png)
-
 ![diagram](docs/MongoDB-Backup-Restore-Structure.png)
 
 

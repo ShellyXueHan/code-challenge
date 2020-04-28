@@ -13,9 +13,10 @@
 
 1. Local environment setup:
 
-  - python3 and pip
-  - Ansible - version 2.9.6
+  - python3 and pip3
+  - Ansible - version 2.9.6 (installed with pip3)
   - oc cli - version 3.11 (corresponding to the cluster version, when migrating to OCP4, update this)
+  - kubectl - version 1.11 (that comes with oc cli package)
 
 
 2. Configure application settings and running playbooks
@@ -58,26 +59,26 @@ With that, the playbook is able to provide the following:
 
 ## Folder Structure
 ```
+.
 ├── README.md
 ├── ansible.cfg
 ├── db-operation.yml
 ├── deployment.yml
 ├── sample-vars.yml
-├── tasks
-│   ├── check_access.yml
-│   ├── clear_object.yml
-│   ├── create_object.yml
-│   ├── env-verify.yml
-│   ├── get_object.yml
-│   ├── rc_setup.yml
-│   ├── replica_set_operation.yml
-│   ├── switch_route.yml
-│   └── templates
-│       ├── backup-restore-verify.sh
-│       ├── configmap-scl-enable.yml
-│       ├── mongo-backup-manifest.yml
-│       ├── mongodb-manifest.yml
-│       ├── rocketchat-manifest.yml
-│       └── rocketchat-route-manifest.yml
-└── vars.yml
+└── tasks
+    ├── check_access.yml
+    ├── clear_object.yml
+    ├── create_object.yml
+    ├── env-verify.yml
+    ├── get_object.yml
+    ├── rc_setup.yml
+    ├── replica_set_operation.yml
+    ├── switch_route.yml
+    └── templates
+        ├── backup-restore-verify.sh
+        ├── configmap-scl-enable.yml
+        ├── mongo-backup-manifest.yml
+        ├── mongodb-manifest.yml
+        ├── rocketchat-manifest.yml
+        └── rocketchat-route-manifest.yml
 ```

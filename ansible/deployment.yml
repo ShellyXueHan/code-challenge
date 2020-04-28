@@ -10,6 +10,13 @@
     # mongo operation settings
     ORIGINAL_SS_POD: "{{ MONGODB_SERVICE_NAME }}-0"
   tasks:
+    - name: Pre-install packages
+      pip:
+        name:
+          - kubernetes
+          - openshift
+        extra_args: --user
+
     - name: Verify environment setup and prerequisites
       include_tasks: tasks/env-verify.yml
 
@@ -36,13 +43,12 @@
     
     - debug: msg="------------- Switching to kubectl for pod interaction -------------"
 
-# TODO: use inventory instead
 # Switch to mongo_pod host for pod interaction
 - hosts: mongo_pod
   gather_facts: yes
   connection: kubectl
   tasks:
-    - name: Clear start before deployment
+    - name: Connect to MongoDB pod and verify ReplicaSet is synced up
       include_tasks: tasks/replica_set_operation.yml
 
     - debug: msg="------- MongoDB ready, continue with App deployment -------"

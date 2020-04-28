@@ -49,13 +49,3 @@ As a result of the playbook, the following OpenShift objects are created:
 
 - A maintenance instance accessible at the origin production URL
   - New route with the production host
-
-
-***Infra-as-Code:***
-
-As Ansible Playbooks are created as YAML files, it's easier reading to keep configuration templates in the same format. From a running instance, the following code has been created to codify the application manifests and tasks.
-- Turn OpenShift object configurations into YAML templates
-- Parameterize templates with Jinja2
-- Include YAML format environment variable setups
-
-The configurations are based from the original RC instance code base [here](https://github.com/BCDevOps/platform-services/tree/master/apps/rocketchat).

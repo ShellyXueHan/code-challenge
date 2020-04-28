@@ -3,13 +3,15 @@ Code challenge assignment from Shelly a.k.a Xue Han.
 
 # 1) Application Deployment
 
-The deployed objects together serve as the `Maintenance Instance` for BCGov Production RocketChat (RC), with Ansible automation and High Availability. This Maintenance instance includes the latest stable RC app and MongoDb as the database, hosted on OpenShift. Running version of the application is available here: https://rocketchat-maintenance.pathfinder.gov.bc.ca
+The deployed objects together serve as the `Maintenance Instance` for BCGov Production RocketChat (RC), with Ansible automation and High Availability. This Maintenance instance includes the latest stable RC app and MongoDb as the database, hosted on OpenShift.
 
-If you are interested in the ideas, thoughts, and background for this application setup, see [here](docs/background.md).
+- Running version of the application is available here: https://rocketchat-maintenance.pathfinder.gov.bc.ca
+- A Trello board created to break down and track tasks: https://trello.com/b/hedKqKK2/code-challenge
 
-As for now, this instance is living on the OpenShift cluster where the prod RC is. `Ansible Playbook` automation makes it easy to migrate once a cloud cluster is ready (as one of the task for my next sprint :P). Following are what to expect from the Ansible Playbook.
 
-Note: I've create fair amount of documentation to be able to migrate this work back to the Platform Service GitHub repo afterwards. So please don't mind them. There are `TL;DR` messages for the optional contents. For your convenience reviewing this assignment, feel free to skip those.
+As for now, this instance is living on the OpenShift cluster where the prod RC is. `Ansible Playbook` automation makes it easy to migrate once a cloud cluster is ready (as one of the task for my next sprint :P). If you are interested in the ideas, thoughts, and background for this application, see [here](docs/background.md). Following are what to expect from the Ansible Playbook.
+
+Note: I've create fair amount of documentation to be able to migrate this work back to the Platform Service GitHub repo afterwards, so please don't mind them. There are `TL;DR` messages for the optional contents. For your convenience reviewing this assignment, feel free to skip those.
 
 
 ***RUN:***
@@ -18,14 +20,15 @@ Note: I've create fair amount of documentation to be able to migrate this work b
 - Manual deployment is also available if needed (but not recommended). See [here](.openshift/README.md) for more details.
 
 
-***MORE DETAILS:***
+***Infra-as-Code:***
 
-See more details on the deployment and Infrastructure As Code setup, TL;DR but it's [here](docs/part-1.md)
+The following code has been created to codify the application manifests and deployment tasks:
+- Turned OpenShift object configurations into YAML templates
+  - The configurations are based from the original RC instance code base [here](https://github.com/BCDevOps/platform-services/tree/master/apps/rocketchat).
+- Parameterized templates with Jinja2
+- Include YAML format environment variable setups
 
-
-***TRELLO:***
-
-A Trello board created to break down all the tasks and made easy to track progress. There are some more tasks I recognize to further improve this assignment. See here: https://trello.com/b/hedKqKK2/code-challenge
+More details on the deployment steps and outcomes, TL;DR but it's [here](docs/part-1.md)
 
 
 ***STRUCTURE:***

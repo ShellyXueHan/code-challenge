@@ -10,6 +10,9 @@
     # mongo operation settings
     ORIGINAL_SS_POD: "{{ MONGODB_SERVICE_NAME }}-0"
   tasks:
+    - name: Verify environment setup and prerequisites
+      include_tasks: tasks/env-verify.yml
+
     - name: Clear start before deployment
       include_tasks: tasks/clear_object.yml
       vars:

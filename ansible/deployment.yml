@@ -10,6 +10,9 @@
     # mongo operation settings
     ORIGINAL_SS_POD: "{{ MONGODB_SERVICE_NAME }}-0"
   tasks:
+    - name: Verify environment setup and prerequisites
+      include_tasks: tasks/env-verify.yml
+
     - name: Clear start before deployment
       include_tasks: tasks/clear_object.yml
       vars:
@@ -27,17 +30,17 @@
     # Check for MongoDB syncing status
     - name: Add hosts for MongoDB pods
       add_host:
-        name: "ORIGINAL_SS_POD"
+        name: "{{ ORIGINAL_SS_POD }}"
         groups:
         - mongo_pod
+    
+    - debug: msg="------------- Switching to kubectl for pod interaction -------------"
 
 # TODO: use inventory instead
 # Switch to mongo_pod host for pod interaction
 - hosts: mongo_pod
   gather_facts: yes
   connection: kubectl
-  vars:
-    DB_SCRIPT: kk
   tasks:
     - name: Clear start before deployment
       include_tasks: tasks/replica_set_operation.yml
@@ -73,6 +76,9 @@
     - name: RC settings via API
       include_tasks: tasks/rc_setup.yml
 
-    - debug: msg="------- Completed. Available at https://{{ HOSTNAME_HTTPS }} -------"
+    - name: Switch production app route
+      include_tasks: tasks/switch_route.yml
+      vars:
+        template: templates/rocketchat-route-manifest.yml
 
-# TODO: add route switch from prod instance
+    - debug: msg="------- Completed. Available at https://{{ PROD_HOSTNAME_HTTPS }} -------"

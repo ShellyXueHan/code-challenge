@@ -1,0 +1,58 @@
+---
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  vars_files:
+   - vars.yml
+  vars:
+    BACKUP_LABEL: "name={{ BACKUP_MONGODB_NAME }}"
+    BACKUP_POD: "{{ BACKUP_MONGODB_NAME }}-0"
+  tasks:
+    - name: Clear start before deployment
+      include_tasks: tasks/clear_object.yml
+      vars:
+        LABEL: "{{ BACKUP_LABEL }}"
+
+    - name: Deploy MongoDB backup instance as Statefulset
+      include_tasks: tasks/create_object.yml
+      vars:
+        name: "{{ BACKUP_MONGODB_NAME }}"
+        kind: StatefulSet
+        template: templates/mongo-backup-manifest.yml
+        namespace: "{{ NAMESPACE }}"
+        ready_status: "{{ BACKUP_MONGODB_REPLICAS }}"
+    
+    # Verify MongoDB restore status
+    - name: Add hosts for MongoDB pods
+      add_host:
+        name: "{{ BACKUP_POD }}"
+        groups:
+        - mongo_backup_pod
+
+    - debug: msg="------------- Switching to kubectl for pod interaction -------------"
+
+# Switch to mongo_backup_pod host for pod interaction
+- hosts: mongo_backup_pod
+  gather_facts: yes
+  connection: kubectl
+  tasks:
+    - debug: msg="------- Connection setup, start to run script -------"
+
+    - name: Start mongo dump and restore, and verify for result
+      raw: scl enable rh-mongodb36 '/var/lib/mongodb/backup-restore-verify.sh'
+      register: result
+
+    - name: Verify result
+      debug: msg="{{ result.stdout_lines }}"
+
+    - debug: msg="------- Backup Verified -------"
+
+# Switch back to localhost
+- hosts: localhost
+  gather_facts: no
+  connection: local
+  vars_files:
+   - vars.yml
+  tasks:
+    - name: Scale down the backup instance
+      command: oc -n "{{ NAMESPACE }}" scale StatefulSet/"{{ BACKUP_MONGODB_NAME }}" --replicas=0

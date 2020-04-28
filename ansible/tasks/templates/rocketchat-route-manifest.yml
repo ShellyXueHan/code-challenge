@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Route
+metadata:
+  namespace: "{{ NAMESPACE }}"
+  name: "{{ APPLICATION_NAME }}-tmp-prod"
+  annotations:
+    description: The temporary production route pointing to maintenance instance.
+  labels:
+    app: "{{ APPLICATION_NAME }}"
+spec:
+  host: "{{ PROD_HOSTNAME_HTTPS }}"
+  port:
+    targetPort: 3000-tcp
+  to:
+    kind: Service 
+    name: "{{ APPLICATION_NAME }}"
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

@@ -151,7 +151,8 @@ items:
             app: "{{ APPLICATION_NAME }}"
             name: "{{ MONGODB_SERVICE_NAME }}"
         spec:
-          accessModes: [ ReadWriteOnce ]
+          accessModes:
+            - ReadWriteOnce
           storageClassName: "{{ SC_MONGO }}"
           resources:
             requests:

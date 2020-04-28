@@ -33,7 +33,22 @@ items:
     ADMIN_USERNAME: "{{ ROCKETCHAT_ADMIN_USER }}"
     ADMIN_PASS: "{{ ROCKETCHAT_ADMIN_PASSWORD }}"
 
-# TODO: add a configmap for initial setup
+# Configmap for initial setup
+- apiVersion: v1
+  kind: ConfigMap
+  metadata:
+    namespace: "{{ NAMESPACE }}"
+    name: "{{ APPLICATION_NAME }}-config"
+    labels:
+      app: "{{ APPLICATION_NAME }}"
+  data:
+    OVERWRITE_SETTING_Accounts_ShowFormLogin: "True"
+    OVERWRITE_SETTING_FileUpload_Enabled: "True"
+    OVERWRITE_SETTING_FileUpload_FileSystemPath: /app/uploads
+    OVERWRITE_SETTING_FileUpload_Storage_Type: FileSystem
+    OVERWRITE_SETTING_Show_Setup_Wizard: Completed
+    OVERWRITE_SETTING_Site_Name: "{{ HOSTNAME_HTTPS }}"
+    OVERWRITE_SETTING_Site_Url: https://"{{ HOSTNAME_HTTPS }}"
 
 # Service for the Rocketchat NodeJS service
 - apiVersion: v1
@@ -105,7 +120,7 @@ items:
       app: "{{ APPLICATION_NAME }}"
   spec:
     strategy:
-      type: Recreate
+      type: Rolling
     triggers:
     - type: ConfigChange
     replicas: "{{ ROCKETCHAT_REPLICAS }}"
@@ -149,6 +164,8 @@ items:
           envFrom: 
             - secretRef:
                 name: "{{ APPLICATION_NAME }}-admin-secret"
+            - configMapRef:
+                name: "{{ APPLICATION_NAME }}-config"
           volumeMounts:
             - name: "{{ APPLICATION_NAME }}-uploads"
               mountPath: /app/uploads
@@ -161,7 +178,7 @@ items:
               path: /api/info
               port: 3000
               scheme: HTTP
-            initialDelaySeconds: 20
+            initialDelaySeconds: 60
             timeoutSeconds: 5
             periodSeconds: 20
             successThreshold: 1
@@ -171,7 +188,7 @@ items:
               path: /api/info
               port: 3000
               scheme: HTTP
-            initialDelaySeconds: 40
+            initialDelaySeconds: 60
             timeoutSeconds: 5
             periodSeconds: 20
             successThreshold: 1

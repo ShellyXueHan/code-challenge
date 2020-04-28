@@ -1,0 +1,17 @@
+---
+# Verify OpenShift environment setup
+
+- name: Check on current namespace
+  command: oc project
+  register: current_namespace
+
+- name: Switch namespace if needed
+  command: oc project "{{ NAMESPACE }}"
+  when: '"{{ NAMESPACE }}" not in current_namespace.stdout'
+
+- name: Check for access in namespace
+  include: check_access.yml
+  with_items:
+    - dc
+    - pvc
+    - route

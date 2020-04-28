@@ -1,5 +1,5 @@
 ### Run on OpenShift
-Use the OpenShift manifests to build and deploy the app.
+Use the OpenShift manifest templates to build and deploy the app.
 ```shell
 cd .openshift
 # Step 1: env setup

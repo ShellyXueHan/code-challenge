@@ -2,7 +2,7 @@
 # Clear up objects by label:
 - name: Setup query param
   set_fact:
-    objects: dc,statefulset,configmap,secret,service,route
+    objects: dc,statefulset,service,route
     output_col: custom-columns="KIND:kind, NAME:.metadata.name, DESIRED:.spec.replicas, CURRENT:.status.readyReplicas"
 
 - name: List objects by label
@@ -10,9 +10,9 @@
     oc get {{ objects }} -o={{ output_col }} -l {{ LABEL }}
   register: all_objects
 
-- name: List PVCs by label
+- name: List PVCs and secrets by label
   command: >
-    oc get pvc -l {{ LABEL }}
+    oc get pvc,secret,configmap -l {{ LABEL }}
   register: all_pvcs
 
 - pause:
@@ -21,16 +21,16 @@
   register: objects_delete
 
 - pause:
-    prompt: "------------- Do you want to delete PVC? \n\n{{ all_pvcs.stdout }} \n-------------\n(y/n)"
+    prompt: "------------- Do you want to delete PVCs and secrets? \n\n{{ all_pvcs.stdout }} \n-------------\n(y/n)"
     echo: yes
   register: pvc_delete
 
 - name: Clear objects by label
   command: >
-    oc delete all,configmap,secret -l "{{ LABEL }}"
+    oc delete dc,statefulset,configmap,service,route -l "{{ LABEL }}"
   when: objects_delete.user_input == "y"
 
-- name: Clear PVCs by label
+- name: Clear PVCs and secrets by label
   command: >
-    oc delete pvc -l "{{ LABEL }}"
+    oc delete pvc,secret,configmap -l "{{ LABEL }}"
   when: pvc_delete.user_input == "y"

@@ -1,5 +1,6 @@
 ---
-# Get list of Objects in a namespace:
+# Get list of Objects in a namespace, filter by the label:
+
 - name: Get objects by label
   set_fact:
     deployments: "{{ lookup('k8s', kind='dc', namespace=NAMESPACE, label_selector=LABEL) }}"

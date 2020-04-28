@@ -1,4 +1,12 @@
 #!/bin/bash
+# ====================================
+# This is a customized script to conduct
+# the backup strategy for MongoDB, including:
+# - creating new path to store backup with timestamp
+# - db dump to create backup
+# - db restore to the current db instance
+# - db shell commands to verify the targeted database exists
+# ====================================
 echo "----- Clean up backups -----" &&
 ls -rdt /var/lib/mongodb-backup/dump-* |
 head -n -$MONGODB_BACKUP_KEEP |

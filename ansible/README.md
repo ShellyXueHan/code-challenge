@@ -1,12 +1,13 @@
 
 
-# Ansible Playbook to deploy Maintenance Instance for RocketChat
+# Ansible Playbook to deploy a HA Maintenance Instance for RocketChat
 
-As OpenShift provides good orchestration feature on the pods and corresponding services and routes, I'm using Ansible to manipulate application with OpenShift manifests. The Playbooks are designed with idempotent tasks, using status checks and object operations are done by states. Here are the major modules used:
-
-- [k8s modules](https://docs.ansible.com/ansible/latest/modules/k8s_module.html) to query and manage OpenShift Objects
-- [kubectl connection plugin](https://docs.ansible.com/ansible/latest/plugins/connection/kubectl.html) to execute tasks in pods
-- [uri modules](https://docs.ansible.com/ansible/latest/modules/uri_module.html) to make API request to application enddpoints
+## Major components:
+- Playbook `deployment.yml` that deploys HA Rocketchat and HA MongoDB ReplicaSet
+- Playbook `db-operation.yml` for conducting the database backup-restore strategy
+- Playbook shares the same environment setup at `vars.yml`
+- Tasks and OpenShift manifests in `tasks/` folder
+- Shell scripts are added as configmap to the deployment (there are .sh copy for readability)
 
 ## Running the Ansible Playbooks
 
@@ -37,16 +38,25 @@ python3 $(which ansible-playbook) db-operation.yml
 
 ```
 
-## Features
+# TL;DR
+The following documentation is included for integration with existing RC work.
 
+## Features and Dependencies:
+
+As OpenShift provides good orchestration feature on the pods and corresponding services and routes, I'm using Ansible to manipulate application with OpenShift manifests. The Playbooks are designed with idempotent tasks, using status checks and object operations are done by states. Here are the major modules used:
+
+- [k8s modules](https://docs.ansible.com/ansible/latest/modules/k8s_module.html) to query and manage OpenShift Objects
+- [kubectl connection plugin](https://docs.ansible.com/ansible/latest/plugins/connection/kubectl.html) to execute tasks in pods
+- [uri modules](https://docs.ansible.com/ansible/latest/modules/uri_module.html) to make API request to application endpoints
+
+With that, the playbook is able to provide the following:
 - Tasks has dynamic name to specify what's being run
 - When verifying the status of each tasks, `timeout-retry` has been implemented to avoid timing issue
 - Some steps will take minutes to finish based on the available resources, especially pod execution step as it needs to setup host connections
 - To provide idempotency, you might be seeing tasks with failure message in red, which is expected and will not exit the play
 - If a task has not been passing status check for too long (over the time limit), the playbook will provide detail information on failure and exit itself
 
-
-## Structure of the Playbooks
+## Folder Structure
 ```
 ├── README.md
 ├── ansible.cfg
@@ -71,7 +81,3 @@ python3 $(which ansible-playbook) db-operation.yml
 │       └── rocketchat-route-manifest.yml
 └── vars.yml
 ```
-
-There are two main playbooks, `deployment.yml` for deploy the maintenance instance, and `db-operation.yml` for conducting the database backup-restore strategy. The playbooks run the tasks included in `tasks/` folder and use the OpenShift manifests in `tasks/templates` to create and manage objects.
-
-Shell scripts are added as configmaps to the deployment. There is also an original copy for readability at `tasks/templates`.

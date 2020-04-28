@@ -3,79 +3,54 @@ Code challenge assignment from Shelly a.k.a Xue Han.
 
 # 1) Application Deployment
 
-The deployed objects together serve as the `Maintenance Instance` for BCGov Production RocketChat (RC), with Ansible automation and High Availability. This Maintenance instance includes the latest stable RC app and MongoDb as the database, hosted on OpenShift. Running version of the application is available here: https://rocketchat-maintenance.pathfinder.gov.bc.ca
+The deployed objects together serve as the `Maintenance Instance` for BCGov Production RocketChat (RC), with Ansible automation and High Availability. This Maintenance instance includes the latest stable RC app and MongoDb as the database, hosted on OpenShift.
 
-If you are interested in the ideas, thoughts, and background for this application setup, see [here](docs/background.md).
-
-As for now, this instance is living on the OpenShift cluster where the prod RC is. `Ansible Playbook` automation makes it easy to migrate once a cloud cluster is ready (as one of the task for my next sprint :P). Following are what to expect from the Ansible Playbook.
-
-***TASKS:***
-
-The [Ansible Playbook](ansible/deployment.yml) bring up a RC Maintenance instance. It contains the following tasks:
-- Setup local environment and OpenShift namespace:
-  - Verify environment setup and prerequisites
-  - List objects in namespace matching label
-  - Clear up the namespace, preserve PVCs and secrets when needed
-
-- Deploy the components:
-  - Deploy HA MongoDB ReplicaSet as an OpenShift StatefulSet
-  - Deploy HA RC app
-
-- Test the success of the deployment and rollback when failed:
-  - Verify MongoDB service ready
-  - Verify deployment has expected ready pods
-  - Rollback DeploymentConfig when not successful
-
-- Final step to setup RC maintenance notification:
-  - Create default chat channel and post notification message
-  - Switch Production RC route to point to Maintenance instance
-  - (for now, it's only switching the dev RC instance to avoid affecting prod chat)
+- Running version of the application is available here: https://rocketchat-maintenance.pathfinder.gov.bc.ca
+- A Trello board created to break down and track tasks: https://trello.com/b/hedKqKK2/code-challenge
 
 
-During each step, corresponding output results are displayed for progress reference. There will be prompts for interaction, please see the options provided during the run. *Please note that when tasks have not succeed over the retry limits, or when unexpected errors occur, the Playbook will quit and error out. Double check your network connection and cluster status. Playbook is setup to be idempotent, so just run again.*
+As for now, this instance is living on the OpenShift cluster where the prod RC is. `Ansible Playbook` automation makes it easy to migrate once a cloud cluster is ready (as one of the task for my next sprint :P). If you are interested in the ideas, thoughts, and background for this application, see [here](docs/background.md). Following are what to expect from the Ansible Playbook.
 
-
-***OUTCOME:***
-
-As a result of the playbook, the following OpenShift objects are created:
-- HA StatefulSet of MongoDB ReplicaSet:
-  - 3 replicas with Anti Affinity setup to ensure HA setting
-  - Persistent Volumes with `netapp-block-standard` type to improve performance
-  - services for MongoDB and internal ReplicaSet operation
-  - Secret for MongoDB access
-  - Mounted script to enable RHSCL for kubectl execution setup
-
-- HA deployment of RC app:
-  - 3 replicas with a Horizontal Pod Autoscaler
-  - Local RC ImageStream with proper tags
-  - Exposed service and route
-  - Secret for RC admin credential
-  - Persistent Volume (via PVC) to hold uploaded assets
-  - Configmap for initial RC setup
-
-- A maintenance instance accessible at the origin production URL
-  - New route with the production host
-
-
-***Infra-as-Code:***
-
-As Ansible Playbooks are created as YAML files, it's easier reading to keep configuration templates in the same format. From a running instance, the following code has been created to codify the application manifests and tasks.
-- Turn OpenShift object configurations into YAML templates
-- Parameterize templates with Jinja2
-- Include YAML format environment variable setups
-
-The configurations are based from the original RC instance code base [here](https://github.com/BCDevOps/platform-services/tree/master/apps/rocketchat).
+Note: I've create fair amount of documentation to be able to migrate this work back to the Platform Service GitHub repo afterwards, so please don't mind them. There are `TL;DR` messages for the optional contents. For your convenience reviewing this assignment, feel free to skip those.
 
 
 ***RUN:***
 
-- Ansible deployment is available [here](ansible/README.md).
-- Manual deployment is also available is needed (but not recommended). See [here](.openshift/README.md) for more details.
+- Deploy with Ansible Playbook, detail steps [here](ansible/README.md).
+- Manual deployment is also available if needed (but not recommended). See [here](.openshift/README.md) for more details.
+
+
+***Infra-as-Code:***
+
+The following code has been created to codify the application manifests and deployment tasks:
+- Turned OpenShift object configurations into YAML templates
+  - The configurations are based from the original RC instance code base [here](https://github.com/BCDevOps/platform-services/tree/master/apps/rocketchat).
+- Parameterized templates with Jinja2
+- Include YAML format environment variable setups
+
+More details on the deployment steps and outcomes, TL;DR but it's [here](docs/part-1.md)
+
+
+***STRUCTURE:***
+
+(Image from https://github.com/BCDevOps/platform-services/blob/master/apps/rocketchat/RocketChat-MongoDB-HA-Design.png)
+
+![diagram](docs/RocketChat-MongoDB-HA-Design.png)
+
 
 
 # 2) Operational Plan Development
 
-Anisble Playbook to automate the MongoDB backup-restore tasks, and verifies for the restore status.
+Anisble Playbook to automate the MongoDB backup-restore tasks, and verify if the restore is successful.
+
+***RUN:***
+
+- Ansible deployment is available [here](ansible/README.md).
+
+***STRUCTURE:***
+
+![diagram](docs/MongoDB-Backup-Restore-Structure.png)
+
 
 ***TASKS:***
 
@@ -117,7 +92,7 @@ This operational plan is designed for the maintenance instance (but it would be 
   - A bit over kill for this simple task and not enough customization
 
 
-***RUN:***
 
-- Ansible deployment is available [here](ansible/README.md).
+# 3) Bonus Round
 
+Production RocketChat instance upgrade and migration plan, plus some security concerns. See [here](docs/part-3.md).

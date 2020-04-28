@@ -8,6 +8,16 @@
     BACKUP_LABEL: "name={{ BACKUP_MONGODB_NAME }}"
     BACKUP_POD: "{{ BACKUP_MONGODB_NAME }}-0"
   tasks:
+    - name: Pre-install packages
+      pip:
+        name:
+          - kubernetes
+          - openshift
+        extra_args: --user
+
+    - name: Verify environment setup and prerequisites
+      include_tasks: tasks/env-verify.yml
+
     - name: Clear start before deployment
       include_tasks: tasks/clear_object.yml
       vars:

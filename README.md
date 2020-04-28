@@ -9,19 +9,23 @@ If you are interested in the ideas, thoughts, and background for this applicatio
 
 As for now, this instance is living on the OpenShift cluster where the prod RC is. `Ansible Playbook` automation makes it easy to migrate once a cloud cluster is ready (as one of the task for my next sprint :P). Following are what to expect from the Ansible Playbook.
 
+Note: I've create fair amount of documentation to be able to migrate this work back to the Platform Service GitHub repo afterwards. So please don't mind them. There are `TL;DR` messages for the optional contents. For your convenience reviewing this assignment, feel free to skip those.
+
+
 ***RUN:***
 
 - Deploy with Ansible Playbook, detail steps [here](ansible/README.md).
 - Manual deployment is also available if needed (but not recommended). See [here](.openshift/README.md) for more details.
 
-***MORE details on the deployment and setup:***
 
-TL;DR but it's [here](docs/part-1.md)
+***MORE DETAILS:***
+
+See more details on the deployment and Infrastructure As Code setup, TL;DR but it's [here](docs/part-1.md)
 
 
-***Tracking the work:***
+***TRELLO:***
 
-Trello board created to break down all the tasks and made easy to track progress. There are still some minor tasks to complete to further improve this assignment. See here: https://trello.com/b/hedKqKK2/code-challenge
+A Trello board created to break down all the tasks and made easy to track progress. There are some more tasks I recognize to further improve this assignment. See here: https://trello.com/b/hedKqKK2/code-challenge
 
 
 ***STRUCTURE:***

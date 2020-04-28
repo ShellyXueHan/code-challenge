@@ -38,7 +38,7 @@ Anisble Playbook to automate the MongoDB backup-restore tasks, and verify if the
 
 ***RUN:***
 
-- Ansible deployment is available [here](../ansible/README.md).
+- Ansible deployment is available [here](ansible/README.md).
 
 ***STRUCTURE:***
 
